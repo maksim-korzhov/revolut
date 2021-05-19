@@ -6,6 +6,11 @@ interface IProps {
   value: string;
 }
 
+/**
+ * Renders wallets data on slides.
+ * @param param0
+ * @returns
+ */
 const CurrencySlide: React.FunctionComponent<IProps> = ({
   name,
   sign,
