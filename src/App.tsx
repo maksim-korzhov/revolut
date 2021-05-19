@@ -3,6 +3,8 @@ import CurrencySlider from "./features/currencySlider/CurrencySlider";
 import CurrencyInput from "./features/currencyInput/CurrecnyInput";
 import "./App.css";
 
+import currency from "currency.js";
+
 export interface CurrencyData {
   name: string;
   sign: string;
@@ -16,7 +18,13 @@ interface Data {
 }
 
 const data = {
+  selected: "USD",
   wallets: {
+    usd: {
+      name: "USD",
+      sign: "$",
+      total: 0,
+    },
     eur: {
       name: "EUR",
       sign: "€",
@@ -27,16 +35,16 @@ const data = {
       sign: "₽",
       total: 0,
     },
-    usd: {
-      name: "USD",
-      sign: "$",
-      total: 0,
-    },
     gbp: {
       name: "GBP",
       sign: "£",
       total: 0,
     },
+  },
+  rates: {
+    EUR: 0.817712,
+    RUB: 73.6975,
+    GBP: 0.70545,
   },
 };
 
