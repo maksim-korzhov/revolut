@@ -1,0 +1,91 @@
+* {
+  box-sizing: border-box;
+}
+
+.container {
+  background: rgb(14,111,217);
+  background: linear-gradient(90deg, rgba(14,111,217,1) 0%, rgba(19,141,237,1) 26%, rgba(19,141,237,1) 64%, rgba(14,76,150,1) 100%);
+  display: flex;
+}
+
+.wrapper {
+  margin: auto;
+  height: 100vh;
+  width: 100vw;
+  max-width: 768px;
+}
+
+/* Slider */
+.slider {
+  margin: auto;
+  height: 50vh;
+  position: relative;
+}
+
+.slider-item {
+  height: 50vh;
+  width: 50vw;
+}
+
+/* Exchange section */
+.exchange {
+  height: 100%;
+  width: 40%;
+}
+
+.exchange-wrapper {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.exchange-content {
+  margin: auto;
+}
+
+.exchange-currency {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: normal;
+  margin: 0;
+}
+
+@media screen and (min-width: 768px) {
+  .exchange-currency {
+    font-size: 5rem;
+  }
+}
+
+.exchange-inwallet {
+  color: #ccc;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+@media screen and (min-width: 576px) {
+  .exchange-inwallet {
+    font-size: 1rem;
+  }
+}
+
+/* Exchange value input */
+.exchangeValue {
+  font-size: 2rem;
+  border: none;
+  background: transparent;
+  color: #fff;
+  outline: none;
+  text-align: right;
+
+  position: absolute;
+  left : 95%;
+  top: 50%;
+  transform: translate(-100%, -50%);
+  width: 40%;
+}
+
+@media screen and (min-width: 768px) {
+  .exchangeValue {
+    font-size: 4rem;
+  }
+}
