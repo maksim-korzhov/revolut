@@ -13,15 +13,27 @@ interface IProps {
   name: string;
   disabled?: boolean;
   prefix?: string;
-  value?: string;
+  value?: number;
+  onChange?: Function;
 }
 
+/**
+ * Display the input for the currency
+ * @returns
+ */
 const CurrencyInput: React.FunctionComponent<IProps> = ({
   name,
+  onChange,
+  value,
   disabled = false,
   prefix = "",
-  value = "",
 }) => {
+  const settings = {} as any;
+  if (value !== undefined) settings.value = value;
+  if (onChange !== undefined)
+    settings.onValueChange = ({ floatValue }: any) =>
+      onChange && onChange(floatValue);
+
   return (
     <NumberFormat
       allowLeadingZeros={false}
@@ -33,7 +45,7 @@ const CurrencyInput: React.FunctionComponent<IProps> = ({
       name={name}
       prefix={prefix}
       thousandSeparator={true}
-      value={value}
+      {...settings}
     />
   );
 };

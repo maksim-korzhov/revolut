@@ -21,7 +21,9 @@ const settings = {
 
 // TODO: Correct wallets type
 interface IProps {
+  current: string;
   wallets: any;
+  onChange: Function;
 }
 
 /**
@@ -40,10 +42,20 @@ const renderCurrencySlide = ({ name, sign, total }: any) => (
  * @param data
  * @returns
  */
-const CurrencySlider: React.FunctionComponent<IProps> = ({ wallets }) => {
+const CurrencySlider: React.FunctionComponent<IProps> = ({
+  wallets,
+  onChange,
+}) => {
   return (
     <section className="exchange">
-      <Slider {...settings}>
+      <Slider
+        {...settings}
+        afterChange={(slideNumber) => {
+          const currentWalletKey = Object.keys(wallets)[slideNumber];
+          const currentWallet = wallets[currentWalletKey];
+          onChange(currentWallet.name);
+        }}
+      >
         {Object.keys(wallets).map((key) => renderCurrencySlide(wallets[key]))}
       </Slider>
     </section>
