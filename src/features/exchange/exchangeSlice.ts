@@ -1,15 +1,86 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState, AppThunk } from '../../app/store';
-import { fetchCount } from './counterAPI';
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { RootState, AppThunk } from "../../app/store";
+import { fetchCount } from "./counterAPI";
+import currency from "currency.js";
+import { getRatedValue } from "../../helpers/converters";
 
-export interface CounterState {
-  value: number;
-  status: 'idle' | 'loading' | 'failed';
+enum RatesEnum {
+  USD = "USD",
+  EUR = "EUR",
+  RUB = "RUB",
+  GBP = "GBP",
 }
 
-const initialState: CounterState = {
-  value: 0,
-  status: 'idle',
+export interface CurrencyData {
+  name: RatesEnum;
+  sign: string;
+  total: number;
+  rates: Record<RatesEnum, number>;
+  selectedFrom: boolean;
+  selectedTo: boolean;
+}
+
+export type Wallets = Record<RatesEnum, CurrencyData>;
+export type ExchangeState = Record<RatesEnum, CurrencyData>;
+export type CurrencyShort = Record<
+  RatesEnum,
+  Pick<CurrencyData, "name" | "sign" | "total">
+>;
+export type ExchangeStateShort = Record<RatesEnum, CurrencyShort>;
+
+const initialState: ExchangeState = {
+  USD: {
+    name: RatesEnum.USD,
+    sign: "$",
+    total: 45.43,
+    rates: {
+      EUR: 0.82,
+      RUB: 73.6975,
+      GBP: 0.71,
+      USD: 1,
+    },
+    selectedFrom: true,
+    selectedTo: true,
+  },
+  EUR: {
+    name: RatesEnum.EUR,
+    sign: "€",
+    total: 132.44,
+    rates: {
+      EUR: 1,
+      RUB: 89.9446,
+      GBP: 0.86,
+      USD: 1.22,
+    },
+    selectedFrom: false,
+    selectedTo: false,
+  },
+  RUB: {
+    name: RatesEnum.RUB,
+    sign: "₽",
+    total: 10007.43,
+    rates: {
+      EUR: 0.011,
+      RUB: 1,
+      GBP: 0.0096,
+      USD: 0.014,
+    },
+    selectedFrom: false,
+    selectedTo: false,
+  },
+  GBP: {
+    name: RatesEnum.GBP,
+    sign: "£",
+    total: 21.1,
+    rates: {
+      EUR: 1.16,
+      RUB: 104.4104,
+      GBP: 1,
+      USD: 1.42,
+    },
+    selectedFrom: false,
+    selectedTo: false,
+  },
 };
 
 // The function below is called a thunk and allows us to perform async logic. It
@@ -17,66 +88,122 @@ const initialState: CounterState = {
 // will call the thunk with the `dispatch` function as the first argument. Async
 // code can then be executed and other actions can be dispatched. Thunks are
 // typically used to make async requests.
-export const incrementAsync = createAsyncThunk(
-  'counter/fetchCount',
-  async (amount: number) => {
-    const response = await fetchCount(amount);
-    // The value we return becomes the `fulfilled` action payload
-    return response.data;
-  }
-);
+// export const incrementAsync = createAsyncThunk(
+//   "counter/fetchCount",
+//   async (amount: number) => {
+//     const response = await fetchCount(amount);
+//     // The value we return becomes the `fulfilled` action payload
+//     return response.data;
+//   }
+// );
 
-export const counterSlice = createSlice({
-  name: 'counter',
+export const exchangeSlice = createSlice({
+  name: "exchange",
   initialState,
   // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
-    increment: (state) => {
-      // Redux Toolkit allows us to write "mutating" logic in reducers. It
-      // doesn't actually mutate the state because it uses the Immer library,
-      // which detects changes to a "draft state" and produces a brand new
-      // immutable state based off those changes
-      state.value += 1;
+    exchangeValue: (state, action: PayloadAction<number>) => {
+      const [fromWallet, toWallet] = selectFromToWallets({ exchange: state });
+      const rate = selectCurrentRate(fromWallet, toWallet)({ exchange: state });
+
+      // Get money from the current "from" wallet
+      state[fromWallet as RatesEnum].total = currency(
+        state[fromWallet as RatesEnum].total
+      ).subtract(action.payload).value;
+
+      // Move money to the current from wallet
+      state[toWallet as RatesEnum].total = currency(
+        state[toWallet as RatesEnum].total
+      ).add(getRatedValue(rate, action.payload)).value;
     },
-    decrement: (state) => {
-      state.value -= 1;
+    setWallets: (state, action: PayloadAction<[string, string]>) => {
+      Object.keys(state).map((key: string) => {
+        state[key as RatesEnum].selectedFrom = key === action.payload[0];
+        state[key as RatesEnum].selectedTo = key === action.payload[1];
+      });
     },
-    // Use the PayloadAction type to declare the contents of `action.payload`
-    incrementByAmount: (state, action: PayloadAction<number>) => {
-      state.value += action.payload;
-    },
+    // increment: (state) => {
+    //   // Redux Toolkit allows us to write "mutating" logic in reducers. It
+    //   // doesn't actually mutate the state because it uses the Immer library,
+    //   // which detects changes to a "draft state" and produces a brand new
+    //   // immutable state based off those changes
+    //   state.value += 1;
+    // },
+    // decrement: (state) => {
+    //   state.value -= 1;
+    // },
+    // // Use the PayloadAction type to declare the contents of `action.payload`
+    // incrementByAmount: (state, action: PayloadAction<number>) => {
+    //   state.value += action.payload;
+    // },
   },
   // The `extraReducers` field lets the slice handle actions defined elsewhere,
   // including actions generated by createAsyncThunk or in other slices.
-  extraReducers: (builder) => {
-    builder
-      .addCase(incrementAsync.pending, (state) => {
-        state.status = 'loading';
-      })
-      .addCase(incrementAsync.fulfilled, (state, action) => {
-        state.status = 'idle';
-        state.value += action.payload;
-      });
-  },
+  // extraReducers: (builder) => {
+  //   builder
+  //     .addCase(incrementAsync.pending, (state) => {
+  //       state.status = "loading";
+  //     })
+  //     .addCase(incrementAsync.fulfilled, (state, action) => {
+  //       state.status = "idle";
+  //       state.value += action.payload;
+  //     });
+  // },
 });
 
-export const { increment, decrement, incrementByAmount } = counterSlice.actions;
+export const { exchangeValue, setWallets } = exchangeSlice.actions;
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
 // in the slice file. For example: `useSelector((state: RootState) => state.counter.value)`
-export const selectCount = (state: RootState) => state.exchange.value;
+export const selectFromToWallets = (state: RootState) => {
+  const currentState = state.exchange;
+  const rateKeys = Object.keys(state.exchange);
+  return [
+    rateKeys.filter(
+      (rateKey: string) => currentState[rateKey as RatesEnum].selectedFrom
+    )[0],
+    rateKeys.filter(
+      (rateKey: string) => currentState[rateKey as RatesEnum].selectedTo
+    )[0],
+  ];
+};
+
+// Select base wallets data for the slider
+export const selectWallets = ({ exchange }: RootState) => {
+  return Object.keys(exchange).reduce((acc: any, key: string) => {
+    const item = exchange[key as RatesEnum];
+    acc[key as RatesEnum] = {
+      name: exchange[key as RatesEnum].name,
+      sign: exchange[key as RatesEnum].sign,
+      total: exchange[key as RatesEnum].total,
+    };
+
+    return acc;
+  }, {} as any);
+};
+
+/**
+ * Function receives convert currency rate from rateFromName currency
+ * to the rateToName currency
+ * @param rateFromNames
+ * @param rateToName
+ * @returns
+ */
+export const selectCurrentRate =
+  (rateFrom: string, rateTo: string) =>
+  ({ exchange }: RootState) =>
+    exchange[rateFrom as RatesEnum].rates[rateTo as RatesEnum];
 
 // We can also write thunks by hand, which may contain both sync and async logic.
 // Here's an example of conditionally dispatching actions based on current state.
-export const incrementIfOdd = (amount: number): AppThunk => (
-  dispatch,
-  getState
-) => {
-  const currentValue = selectCount(getState());
-  if (currentValue % 2 === 1) {
-    dispatch(incrementByAmount(amount));
-  }
-};
+// export const incrementIfOdd =
+//   (amount: number): AppThunk =>
+//   (dispatch, getState) => {
+//     const currentValue = selectCount(getState());
+//     if (currentValue % 2 === 1) {
+//       dispatch(incrementByAmount(amount));
+//     }
+//   };
 
-export default counterSlice.reducer;
+export default exchangeSlice.reducer;

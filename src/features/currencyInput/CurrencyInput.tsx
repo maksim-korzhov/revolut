@@ -1,17 +1,19 @@
 import * as React from "react";
 import NumberFormat, { NumberFormatValues } from "react-number-format";
 
-function withLengthLimit(inputObj: NumberFormatValues) {
+const MAX_AT_ONCE = 10000000;
+const withLimit = (maxValue: number) => (inputObj: NumberFormatValues) => {
   const { floatValue } = inputObj;
-  const MAX_AT_ONCE = 10000000;
-  if (floatValue && floatValue >= MAX_AT_ONCE) return false;
+
+  if (floatValue && floatValue > maxValue) return false;
 
   return true;
-}
+};
 
 interface IProps {
   name: string;
   disabled?: boolean;
+  maxValue?: number;
   prefix?: string;
   value?: number;
   onChange?: Function;
@@ -25,6 +27,7 @@ const CurrencyInput: React.FunctionComponent<IProps> = ({
   name,
   onChange,
   value,
+  maxValue = MAX_AT_ONCE,
   disabled = false,
   prefix = "",
 }) => {
@@ -41,7 +44,7 @@ const CurrencyInput: React.FunctionComponent<IProps> = ({
       className="exchangeValue"
       decimalScale={2}
       disabled={disabled}
-      isAllowed={withLengthLimit}
+      isAllowed={withLimit(maxValue)}
       name={name}
       prefix={prefix}
       thousandSeparator={true}

@@ -1,116 +1,41 @@
 import React from "react";
 import CurrencySlider from "../currencySlider/CurrencySlider";
 import CurrencyInput from "../currencyInput/CurrencyInput";
-
-import currency from "currency.js";
-
-enum RatesEnum {
-  USD = "USD",
-  EUR = "EUR",
-  RUB = "RUB",
-  GBP = "GBP",
-}
-
-export interface CurrencyData {
-  name: RatesEnum;
-  sign: string;
-  total: number;
-}
-
-export type Wallets = Record<string, CurrencyData>;
-
-type Rates = Record<RatesEnum, number>;
-
-interface Data {
-  selectedFrom: RatesEnum;
-  selectedTo: RatesEnum;
-  wallets: Wallets;
-  rates: Record<RatesEnum, Rates>;
-}
-
-const data = {
-  selectedFrom: "USD",
-  selectedTo: "USD",
-  wallets: {
-    usd: {
-      name: "USD",
-      sign: "$",
-      total: 0,
-    },
-    eur: {
-      name: "EUR",
-      sign: "€",
-      total: 0,
-    },
-    rub: {
-      name: "RUB",
-      sign: "₽",
-      total: 0,
-    },
-    gbp: {
-      name: "GBP",
-      sign: "£",
-      total: 0,
-    },
-  },
-  rates: {
-    USD: {
-      EUR: 0.817712,
-      RUB: 73.6975,
-      GBP: 0.70545,
-      USD: 1,
-    },
-    EUR: {
-      EUR: 0.817712,
-      RUB: 73.6975,
-      GBP: 0.70545,
-      USD: 1,
-    },
-    RUB: {
-      EUR: 0.817712,
-      RUB: 73.6975,
-      GBP: 0.70545,
-      USD: 1,
-    },
-    GBP: {
-      EUR: 0.817712,
-      RUB: 73.6975,
-      GBP: 0.70545,
-      USD: 1,
-    },
-  },
-};
-
-function getRate(rateFromName: RatesEnum, rateToName: RatesEnum) {
-  return data.rates[rateFromName][rateToName];
-}
-
-function getRatedValue(rate: number, value: number) {
-  return currency(value).multiply(rate).value;
-}
+import { useAppSelector, useAppDispatch } from "../../app/hooks";
+import {
+  selectFromToWallets,
+  selectWallets,
+  selectCurrentRate,
+  setWallets,
+  exchangeValue,
+} from "./exchangeSlice";
+import { getRatedValue } from "../../helpers/converters";
 
 interface IProps {}
 
 const Exchange: React.FunctionComponent<IProps> = () => {
-  const [fromWallet, setFromWallet] = React.useState(data.selectedFrom);
-  const [toWallet, setToWallet] = React.useState(data.selectedTo);
+  const wallets = useAppSelector(selectWallets);
+  const [fromWallet, toWallet] = useAppSelector(selectFromToWallets);
+  const currentRate = useAppSelector(selectCurrentRate(fromWallet, toWallet));
+  const dispatch = useAppDispatch();
+
   const [fromValue, setFromValue] = React.useState(0);
   const [toValue, setToValue] = React.useState(0);
 
+  /**
+   * Calculate "to" value using the current rate
+   * @param value
+   */
   const calculateValue = (value: number) => {
     setFromValue(value);
 
     if (value) {
-      const rate = getRate(fromWallet as RatesEnum, toWallet as RatesEnum);
-      const newToValue = getRatedValue(rate, value);
+      const newToValue = getRatedValue(currentRate, value);
       setToValue(newToValue);
     } else {
       setToValue(value);
     }
   };
-
-  /** Reset the fromValue if we change the wallet */
-  React.useEffect(() => setFromValue(0), [fromWallet]);
 
   /** Reset values on from wallet changes */
   React.useEffect(() => {
@@ -118,7 +43,7 @@ const Exchange: React.FunctionComponent<IProps> = () => {
     setToValue(0);
   }, [fromWallet]);
 
-  /** Calculate values on every wallet changes */
+  // /** Calculate values on every wallet changes */
   React.useEffect(() => {
     calculateValue(fromValue);
   }, [toWallet]);
@@ -127,12 +52,13 @@ const Exchange: React.FunctionComponent<IProps> = () => {
     <>
       <div className="slider-container">
         <CurrencySlider
-          wallets={data.wallets}
+          wallets={wallets}
           current={fromWallet}
-          onChange={setFromWallet}
+          onChange={(from: string) => dispatch(setWallets([from, toWallet]))}
         />
 
         <CurrencyInput
+          maxValue={wallets[fromWallet].total}
           name="from"
           prefix="–"
           onChange={calculateValue}
@@ -142,13 +68,27 @@ const Exchange: React.FunctionComponent<IProps> = () => {
 
       <div className="slider-container">
         <CurrencySlider
-          wallets={data.wallets}
+          wallets={wallets}
           current={toWallet}
-          onChange={setToWallet}
+          onChange={(to: string) => dispatch(setWallets([fromWallet, to]))}
         />
 
         <CurrencyInput disabled name="to" prefix="+" value={toValue} />
       </div>
+
+      <footer className="footer">
+        <button
+          className="btn btn-exchange"
+          disabled={!fromValue || fromWallet === toWallet}
+          onClick={() => {
+            dispatch(exchangeValue(fromValue));
+            setFromValue(0);
+            setToValue(0);
+          }}
+        >
+          Exchange
+        </button>
+      </footer>
     </>
   );
 };

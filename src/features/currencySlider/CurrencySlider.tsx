@@ -1,12 +1,10 @@
 import * as React from "react";
 import Slider from "react-slick";
+import CurrencySlide from "../currencySlide/CurrencySlide";
+
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import "./CurrencySlider.module.css";
-
-// import { Wallets } from "";
-
-import CurrencySlide from "../currencySlide/CurrencySlide";
+import "./CurrencySlider.css";
 
 const settings = {
   arrows: false,
