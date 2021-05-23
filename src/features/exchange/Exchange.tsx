@@ -8,6 +8,7 @@ import {
   selectCurrentRate,
   setWallets,
   exchangeValue,
+  loadRatesAsync,
 } from "./exchangeSlice";
 import { getRatedValue } from "../../helpers/converters";
 
@@ -16,7 +17,9 @@ interface IProps {}
 const Exchange: React.FunctionComponent<IProps> = () => {
   const wallets = useAppSelector(selectWallets);
   const [fromWallet, toWallet] = useAppSelector(selectFromToWallets);
-  const currentRate = useAppSelector(selectCurrentRate(fromWallet, toWallet));
+  const fromSign = wallets[fromWallet].sign;
+  const toSign = wallets[toWallet].sign;
+  const currentRate = useAppSelector(selectCurrentRate);
   const dispatch = useAppDispatch();
 
   const [fromValue, setFromValue] = React.useState(0);
@@ -37,6 +40,18 @@ const Exchange: React.FunctionComponent<IProps> = () => {
     }
   };
 
+  /** Load base currency rates */
+  React.useEffect(() => {
+    dispatch(loadRatesAsync());
+
+    const interval = window.setInterval(
+      () => dispatch(loadRatesAsync()),
+      10000
+    );
+
+    return () => window.clearInterval(interval);
+  }, []);
+
   /** Reset values on from wallet changes */
   React.useEffect(() => {
     setFromValue(0);
@@ -46,10 +61,16 @@ const Exchange: React.FunctionComponent<IProps> = () => {
   // /** Calculate values on every wallet changes */
   React.useEffect(() => {
     calculateValue(fromValue);
-  }, [toWallet]);
+  }, [toWallet, calculateValue]);
 
   return (
     <>
+      <header className="header">
+        <div className="current-rate">
+          {`${fromSign}1 = ${toSign}${currentRate.toFixed(4)}`}
+        </div>
+      </header>
+
       <div className="slider-container">
         <CurrencySlider
           wallets={wallets}
