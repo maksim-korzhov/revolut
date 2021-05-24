@@ -1,10 +1,10 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState, AppThunk } from "../../app/store";
+import { RootState } from "../../app/store";
 import { fetchRates } from "./exchangeAPI";
 import currency from "currency.js";
 import { getRatedValue } from "../../helpers/converters";
 
-enum LoadingState {
+export enum LoadingState {
   IDLE,
   LOADING,
   FAILED,
@@ -85,7 +85,7 @@ export const loadRatesAsync = createAsyncThunk(
   async () => {
     const response = await fetchRates();
 
-    console.log("response", response);
+    if (!response) throw new Error("Can not load rates");
     // The value we return becomes the `fulfilled` action payload
     // return response.data;
     return response;
@@ -128,13 +128,20 @@ export const exchangeSlice = createSlice({
         state.rates.data = Object.keys(state.wallets).reduce(
           (acc: any, key: string) => {
             if (action.payload[key]) {
-              acc[key] = action.payload[key];
+              // Fake number to emulate different rates
+              const randomMultiplier =
+                key === RatesEnum.USD ? 1 : Math.random() * 0.1 + 1;
+
+              acc[key] = action.payload[key] * randomMultiplier;
             }
 
             return acc;
           },
           {}
         );
+      })
+      .addCase(loadRatesAsync.rejected, (state, action) => {
+        state.rates.status = LoadingState.FAILED;
       });
   },
 });
@@ -179,7 +186,12 @@ export const selectCurrentRate = ({ exchange }: RootState) => {
   const from = exchange.rates.data[rateFrom as RatesEnum];
   const to = exchange.rates.data[rateTo as RatesEnum];
 
-  return from / to;
+  return to / from;
+};
+
+/** Return loading rate status */
+export const selectStatus = ({ exchange }: RootState) => {
+  return exchange.rates.status;
 };
 
 export default exchangeSlice.reducer;

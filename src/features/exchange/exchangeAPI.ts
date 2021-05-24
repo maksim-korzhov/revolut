@@ -8,8 +8,5 @@ export function fetchRates() {
     })
     .then((response) => {
       return response.rates;
-    })
-    .catch((error) => {
-      console.log("Err", error);
     });
 }

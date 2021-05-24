@@ -1,4 +1,5 @@
 import React from "react";
+import CurrencyRate from "../currencyRate/CurrencyRate";
 import CurrencySlider from "../currencySlider/CurrencySlider";
 import CurrencyInput from "../currencyInput/CurrencyInput";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
@@ -9,6 +10,7 @@ import {
   setWallets,
   exchangeValue,
   loadRatesAsync,
+  selectStatus,
 } from "./exchangeSlice";
 import { getRatedValue } from "../../helpers/converters";
 
@@ -21,6 +23,7 @@ const Exchange: React.FunctionComponent<IProps> = () => {
   const toSign = wallets[toWallet].sign;
   const currentRate = useAppSelector(selectCurrentRate);
   const dispatch = useAppDispatch();
+  const status = useAppSelector(selectStatus);
 
   const [fromValue, setFromValue] = React.useState(0);
   const [toValue, setToValue] = React.useState(0);
@@ -40,6 +43,7 @@ const Exchange: React.FunctionComponent<IProps> = () => {
     }
   };
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   /** Load base currency rates */
   React.useEffect(() => {
     dispatch(loadRatesAsync());
@@ -61,14 +65,19 @@ const Exchange: React.FunctionComponent<IProps> = () => {
   // /** Calculate values on every wallet changes */
   React.useEffect(() => {
     calculateValue(fromValue);
-  }, [toWallet, calculateValue]);
+  }, [currentRate, toWallet, calculateValue]);
 
   return (
     <>
       <header className="header">
-        <div className="current-rate">
-          {`${fromSign}1 = ${toSign}${currentRate.toFixed(4)}`}
-        </div>
+        <CurrencyRate
+          loadingState={status}
+          data={{
+            fromSign,
+            toSign,
+            currentRate,
+          }}
+        />
       </header>
 
       <div className="slider-container">
