@@ -10,7 +10,7 @@ export enum LoadingState {
   FAILED,
 }
 
-enum RatesEnum {
+export enum RatesEnum {
   USD = "USD",
   EUR = "EUR",
   RUB = "RUB",
@@ -25,7 +25,7 @@ export interface CurrencyData {
 
 export type Wallets = Record<RatesEnum, CurrencyData>;
 export interface ExchangeState {
-  wallets: Record<RatesEnum, CurrencyData>;
+  wallets: Wallets;
   rates: {
     from: RatesEnum;
     to: RatesEnum;
@@ -39,7 +39,7 @@ export type CurrencyShort = Record<
 >;
 export type ExchangeStateShort = Record<RatesEnum, CurrencyShort>;
 
-const initialState: ExchangeState = {
+export const initialState: ExchangeState = {
   wallets: {
     USD: {
       name: RatesEnum.USD,

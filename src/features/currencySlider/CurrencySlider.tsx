@@ -6,6 +6,8 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "./CurrencySlider.css";
 
+import { RatesEnum, Wallets } from "../exchange/exchangeSlice";
+
 const settings = {
   arrows: false,
   dots: true,
@@ -17,10 +19,9 @@ const settings = {
   slidesToScroll: 1,
 };
 
-// TODO: Correct wallets type
 interface IProps {
   current: string;
-  wallets: any;
+  wallets: Wallets;
   onChange: Function;
 }
 
@@ -35,6 +36,16 @@ const renderCurrencySlide = ({ name, sign, total }: any) => (
   </div>
 );
 
+const afterChange = (
+  wallets: Wallets,
+  slideNumber: number,
+  callback: Function
+) => {
+  const currentWalletKey = Object.keys(wallets)[slideNumber];
+  const currentWallet = wallets[currentWalletKey as RatesEnum];
+  callback(currentWallet.name);
+};
+
 /**
  * Renders slides with wallets data.
  * @param data
@@ -48,13 +59,13 @@ const CurrencySlider: React.FunctionComponent<IProps> = ({
     <section className="exchange">
       <Slider
         {...settings}
-        afterChange={(slideNumber) => {
-          const currentWalletKey = Object.keys(wallets)[slideNumber];
-          const currentWallet = wallets[currentWalletKey];
-          onChange(currentWallet.name);
-        }}
+        afterChange={(slideNumber: number) =>
+          afterChange(wallets, slideNumber, onChange)
+        }
       >
-        {Object.keys(wallets).map((key) => renderCurrencySlide(wallets[key]))}
+        {Object.keys(wallets).map((key: string) =>
+          renderCurrencySlide(wallets[key as RatesEnum])
+        )}
       </Slider>
     </section>
   );
