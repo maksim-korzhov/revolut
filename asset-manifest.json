@@ -1,0 +1,24 @@
+{
+  "files": {
+    "main.css": "/revolut/static/css/main.a1bf953d.chunk.css",
+    "main.js": "/revolut/static/js/main.b89ae625.chunk.js",
+    "main.js.map": "/revolut/static/js/main.b89ae625.chunk.js.map",
+    "runtime-main.js": "/revolut/static/js/runtime-main.cef4f35f.js",
+    "runtime-main.js.map": "/revolut/static/js/runtime-main.cef4f35f.js.map",
+    "static/css/2.da068147.chunk.css": "/revolut/static/css/2.da068147.chunk.css",
+    "static/js/2.3541cec8.chunk.js": "/revolut/static/js/2.3541cec8.chunk.js",
+    "static/js/2.3541cec8.chunk.js.map": "/revolut/static/js/2.3541cec8.chunk.js.map",
+    "index.html": "/revolut/index.html",
+    "static/css/2.da068147.chunk.css.map": "/revolut/static/css/2.da068147.chunk.css.map",
+    "static/css/main.a1bf953d.chunk.css.map": "/revolut/static/css/main.a1bf953d.chunk.css.map",
+    "static/js/2.3541cec8.chunk.js.LICENSE.txt": "/revolut/static/js/2.3541cec8.chunk.js.LICENSE.txt",
+    "static/media/slick-theme.css": "/revolut/static/media/slick.c94f7671.ttf"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.cef4f35f.js",
+    "static/css/2.da068147.chunk.css",
+    "static/js/2.3541cec8.chunk.js",
+    "static/css/main.a1bf953d.chunk.css",
+    "static/js/main.b89ae625.chunk.js"
+  ]
+}
